@@ -1,22 +1,19 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-require('dotenv').config(); // Load environment variables
+require('dotenv').config();
 
 const app = express();
 app.use(express.json());
 
-// CORS configuration: Allow requests from frontend (replace with your frontend URL)
+// CORS configuration
 const corsOptions = {
-  origin:  'https://thunderous-beignet-4a40a1.netlify.app/', // Allow localhost during local dev
+  origin: 'https://thunderous-beignet-4a40a1.netlify.app',  // Remove trailing slash
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
-app.use(cors(corsOptions)); // Apply the CORS configuration
-
-
-app.use(cors(corsOptions)); // Apply CORS settings
+app.use(cors(corsOptions));
 
 // Connect to MongoDB
 mongoose.connect('mongodb+srv://naval:9zSAcnLcSeRF4jDj@cluster0.nsv37.mongodb.net/cloud101?retryWrites=true&w=majority', {
@@ -26,7 +23,6 @@ mongoose.connect('mongodb+srv://naval:9zSAcnLcSeRF4jDj@cluster0.nsv37.mongodb.ne
   console.log('Connected to MongoDB');
 }).catch((err) => {
   console.error('Error connecting to MongoDB:', err);
-  process.exit(1); // Exit process if DB connection fails
 });
 
 // Define User Schema
@@ -43,23 +39,22 @@ app.post('/api/register', async (req, res) => {
   const { name, email } = req.body;
 
   try {
-    // Create a new user and save it to the database
     const user = new User({ name, email });
     await user.save();
-    res.status(201).json(user); // Respond with the created user
+    res.status(201).json(user);
   } catch (err) {
     console.error('Error saving user:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Export handler for serverless environment (like Vercel)
-module.exports = app;
+// Add a test route
+app.get('/', (req, res) => {
+  res.json({ message: 'Server is running!' });
+});
 
-// Vercel doesn't need a listen, so this is used for local development only
-if (process.env.NODE_ENV !== 'production') {
-  const PORT = process.env.PORT || 5001;
-  app.listen(PORT, () => {
-    console.log(`Server started on port ${PORT}`);
-  });
-}
+// Start the server
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, () => {
+  console.log(`Server started on port ${PORT}`);
+});
